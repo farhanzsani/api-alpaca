@@ -1,0 +1,162 @@
+// =============================================================
+//  Alpaca – Pariwisata Kuliner & UMKM
+//  Prisma Schema
+//  Database: PostgreSQL
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ------------------------------------------------------------------
+// Enum
+// ------------------------------------------------------------------
+
+enum Role {
+  owner_umkm
+  customer
+}
+
+enum TransactionType {
+  income
+  expense
+}
+
+// ------------------------------------------------------------------
+// Table: users
+// ------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  display_name String
+  role         Role      @default(customer)
+  photo_url    String?
+  phone_number String?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  // Relations (One-to-Many)
+  products           Product[]
+  transactions       Transaction[]
+  inventories        Inventory[]
+  waste_resources    WasteResource[]
+  business_locations BusinessLocation[]
+
+  @@map("users")
+}
+
+// ------------------------------------------------------------------
+// Table: products
+// ------------------------------------------------------------------
+
+model Product {
+  id            String   @id @default(uuid())
+  owner_id      String
+  product_name  String
+  description   String?
+  price         Decimal  @db.Decimal(15, 2)
+  image_url     String?
+  category      String
+  is_available  Boolean  @default(true)
+  quantity      Int      @default(0)
+  minimum_stock Int      @default(0)
+  unit          String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  // Relations
+  owner User @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+
+  @@map("products")
+}
+
+// ------------------------------------------------------------------
+// Table: transactions
+// ------------------------------------------------------------------
+
+model Transaction {
+  id          String          @id @default(uuid())
+  owner_id    String
+  type        TransactionType
+  title       String
+  amount      Decimal         @db.Decimal(15, 2)
+  description String?
+  date        DateTime
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
+
+  // Relations
+  owner User @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+}
+
+// ------------------------------------------------------------------
+// Table: inventories
+// ------------------------------------------------------------------
+
+model Inventory {
+  id            String   @id @default(uuid())
+  owner_id      String
+  product_name  String
+  category      String
+  quantity      Int      @default(0)
+  minimum_stock Int      @default(0)
+  unit          String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  // Relations
+  owner User @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+
+  @@map("inventories")
+}
+
+// ------------------------------------------------------------------
+// Table: waste_resources
+// ------------------------------------------------------------------
+
+model WasteResource {
+  id                String   @id @default(uuid())
+  owner_id          String
+  waste_name        String
+  quantity          Int      @default(0)
+  unit              String
+  category          String
+  reusable          Boolean  @default(false)
+  processing_notes  String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Relations
+  owner User @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+
+  @@map("waste_resources")
+}
+
+// ------------------------------------------------------------------
+// Table: business_locations
+// ------------------------------------------------------------------
+
+model BusinessLocation {
+  id            String   @id @default(uuid())
+  owner_id      String
+  business_name String
+  latitude      Float
+  longitude     Float
+  address       String
+  description   String?
+  image_url     String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  // Relations
+  owner User @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+
+  @@map("business_locations")
+}
