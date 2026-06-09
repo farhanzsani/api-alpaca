@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
+import pkg from "@prisma/client";
+const { PrismaClient } = pkg;
 
 // Singleton pattern agar tidak terjadi multiple connection di development (hot-reload)
 const globalForPrisma = globalThis as unknown as {
@@ -8,16 +7,15 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient(): PrismaClient {
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-  });
-  const adapter = new PrismaPg(pool);
-
   return new PrismaClient({
-    adapter,
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
     log:
       process.env.NODE_ENV === "development"
-        ? ["query", "warn", "error"]
+        ? ["warn", "error"]
         : ["error"],
   });
 }

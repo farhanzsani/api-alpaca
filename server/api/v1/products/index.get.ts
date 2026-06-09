@@ -2,7 +2,8 @@
 /**
  * GET /api/v1/products
  *
- * Mengambil semua produk milik user yang sedang login (berdasarkan Firebase UID).
+ * - Customer: Melihat semua produk yang tersedia
+ * - Owner UMKM: Melihat produk miliknya sendiri
  *
  * Query Parameters:
  *   - category  (opsional) : filter berdasarkan kategori produk
@@ -15,14 +16,44 @@
  */
 export default defineEventHandler(async (event) => {
   try {
-    const { uid } = getFirebaseUser(event);
+    const firebaseUser = getFirebaseUser(event);
+    const { uid, email, name } = firebaseUser;
     const query = getQuery(event);
 
     const category = query.category as string | undefined;
     const available = query.available as string | undefined;
 
-    // Bangun filter dinamis berdasarkan UID dari Firebase token
-    const where: Record<string, unknown> = { owner_id: uid };
+    // Cek role user, auto-create jika belum ada
+    let user = await prisma.user.findUnique({
+      where: { id: uid },
+      select: { role: true },
+    });
+
+    if (!user) {
+      // Auto-create user dengan role customer sebagai default
+      user = await prisma.user.create({
+        data: {
+          id: uid,
+          email: email ?? "unknown@example.com",
+          display_name: name ?? "User",
+          role: "customer",
+        },
+        select: { role: true },
+      });
+    }
+
+    // Filter berdasarkan role
+    const where: any = {};
+
+    console.log(`[GET /api/v1/products] User ${uid} has role: ${user.role}`);
+
+    if (user.role === "owner_umkm") {
+      // Owner UMKM hanya lihat produknya sendiri
+      where.owner_id = uid;
+      console.log(`[GET /api/v1/products] Filtering by owner_id: ${uid}`);
+    } else {
+      console.log(`[GET /api/v1/products] Customer mode - showing all products`);
+    }
 
     if (category) {
       where.category = category;
@@ -31,6 +62,8 @@ export default defineEventHandler(async (event) => {
     if (available !== undefined) {
       where.is_available = available === "true";
     }
+
+    console.log(`[GET /api/v1/products] Where clause:`, JSON.stringify(where));
 
     const products = await prisma.product.findMany({
       where,
