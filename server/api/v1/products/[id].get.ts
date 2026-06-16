@@ -1,23 +1,29 @@
 
 /**
  * GET /api/v1/products/:id
- * Hanya pemilik produk yang bisa mengakses.
+ * Public endpoint - siapa pun bisa melihat detail produk.
  */
 export default defineEventHandler(async (event) => {
   try {
-    const { uid } = getFirebaseUser(event);
     const id = getRouterParam(event, "id");
 
-    const product = await prisma.product.findUnique({ where: { id } });
+    const product = await prisma.product.findUnique({ 
+      where: { id },
+      include: {
+        owner: {
+          select: { 
+            id: true, 
+            display_name: true, 
+            photo_url: true, 
+            phone_number: true 
+          },
+        },
+      },
+    });
 
     if (!product) {
       setResponseStatus(event, 404);
       return errorResponse(`Produk dengan id '${id}' tidak ditemukan.`);
-    }
-
-    if (product.owner_id !== uid) {
-      setResponseStatus(event, 403);
-      return errorResponse("Akses ditolak. Produk ini bukan milik Anda.");
     }
 
     return successResponse("Berhasil mengambil detail produk.", product);

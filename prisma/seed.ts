@@ -188,8 +188,10 @@ async function main() {
 
   const ownerUsers = await Promise.all(
     NAMES.map(async (name, i) => {
+      const firebaseUid = `firebase_${name.toLowerCase().replace(/\s/g, "_")}_${i}`;
       return prisma.user.create({
         data: {
+          id: firebaseUid,
           email: `${name.toLowerCase().replace(/\s/g, ".")}${i}@alpaca.id`,
           display_name: name,
           role: "owner_umkm",
@@ -202,8 +204,10 @@ async function main() {
 
   const customerUsers = await Promise.all(
     Array.from({ length: 10 }, async (_, i) => {
+      const firebaseUid = `firebase_customer_${i}`;
       return prisma.user.create({
         data: {
+          id: firebaseUid,
           email: `customer${i + 1}@alpaca.id`,
           display_name: `Customer ${i + 1}`,
           role: "customer",

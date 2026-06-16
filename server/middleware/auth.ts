@@ -16,7 +16,9 @@ const PUBLIC_ROUTES = [
 
 // Route yang public TAPI hanya untuk GET method
 const PUBLIC_GET_ROUTES = [
-  "/api/v1/business-locations"
+  "/api/v1/business-locations",
+  "/api/v1/products",
+  "/api/v1/media"
 ];
 
 export default defineEventHandler(async (event) => {
@@ -54,6 +56,7 @@ export default defineEventHandler(async (event) => {
       email: decoded.email ?? null,
       name: decoded.name ?? null,
       picture: decoded.picture ?? null,
+      role: decoded.role ?? null, // Custom claim
     };
   } catch (err) {
     console.error("[Auth Middleware] Token tidak valid:", err);

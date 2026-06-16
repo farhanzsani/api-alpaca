@@ -5,6 +5,7 @@ export interface FirebaseUser {
   email: string | null;
   name: string | null;
   picture: string | null;
+  role?: string; // Custom claim dari Firebase
 }
 
 /**
