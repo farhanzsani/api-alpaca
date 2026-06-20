@@ -290,11 +290,33 @@ const endpointGroups = [
   {
     icon: '📍', resource: 'Business Locations', desc: 'Peta UMKM Rowokangkung',
     endpoints: [
-      { method: 'GET',    path: '/business-locations',        note: 'Semua lokasi (explore map)' },
-      { method: 'GET',    path: '/business-locations/:id',    note: 'Detail + info owner' },
-      { method: 'POST',   path: '/business-locations/create', note: 'Daftarkan lokasi baru' },
-      { method: 'PUT',    path: '/business-locations/:id',    note: 'Update lokasi' },
-      { method: 'DELETE', path: '/business-locations/:id',    note: 'Hapus lokasi' },
+      { method: 'GET',    path: '/business-locations',            note: 'Semua lokasi (explore map)' },
+      { method: 'GET',    path: '/business-locations/nearby',     note: 'Lokasi terdekat (lat, lng, radius)' },
+      { method: 'GET',    path: '/business-locations/:id',        note: 'Detail + info owner' },
+      { method: 'POST',   path: '/business-locations/create',     note: 'Daftarkan lokasi baru' },
+      { method: 'PUT',    path: '/business-locations/:id',        note: 'Update lokasi' },
+      { method: 'DELETE', path: '/business-locations/:id',        note: 'Hapus lokasi' },
+    ],
+  },
+  {
+    icon: '❤️', resource: 'Favorites', desc: 'Produk & lokasi favorit pengguna',
+    endpoints: [
+      { method: 'GET',    path: '/favorites?user_id=',                        note: 'Daftar favorit pengguna' },
+      { method: 'POST',   path: '/favorites/create',                          note: 'Tambah ke favorit' },
+      { method: 'DELETE', path: '/favorites/:itemType/:itemId?user_id=',      note: 'Hapus dari favorit' },
+    ],
+  },
+  {
+    icon: '🖼️', resource: 'Media', desc: 'Galeri gambar produk & lokasi',
+    endpoints: [
+      { method: 'GET',    path: '/media?ref_id=&ref_type=', note: 'Daftar media per referensi' },
+      { method: 'DELETE', path: '/media/:id',               note: 'Hapus media' },
+    ],
+  },
+  {
+    icon: '☁️', resource: 'Upload', desc: 'Upload file ke Supabase Storage',
+    endpoints: [
+      { method: 'POST',   path: '/upload/image',  note: 'Upload gambar (multipart/form-data)' },
     ],
   },
 ]
@@ -317,14 +339,20 @@ const errorExample = `{
 
 // ── Query Params ───────────────────────────────────────────
 const queryParams = [
-  { param: 'owner_id', type: 'string (UUID)', endpoint: 'products, transactions, inventories, waste-resources', desc: 'Filter data berdasarkan pemilik UMKM' },
-  { param: 'category', type: 'string', endpoint: 'products, inventories, waste-resources', desc: 'Filter berdasarkan kategori' },
-  { param: 'available', type: 'boolean', endpoint: 'products', desc: 'Filter ketersediaan produk (true/false)' },
-  { param: 'type', type: 'income | expense', endpoint: 'transactions', desc: 'Filter jenis transaksi' },
-  { param: 'date_from', type: 'ISO date', endpoint: 'transactions', desc: 'Filter tanggal mulai' },
-  { param: 'date_to', type: 'ISO date', endpoint: 'transactions', desc: 'Filter tanggal akhir' },
-  { param: 'low_stock', type: 'boolean', endpoint: 'inventories', desc: 'Tampilkan hanya stok menipis' },
-  { param: 'reusable', type: 'boolean', endpoint: 'waste-resources', desc: 'Filter limbah yang bisa didaur ulang' },
+  { param: 'owner_id',  type: 'string (UUID)',    endpoint: 'products, transactions, inventories, waste-resources', desc: 'Filter data berdasarkan pemilik UMKM' },
+  { param: 'user_id',   type: 'string (UUID)',    endpoint: 'favorites',                desc: 'Filter favorit berdasarkan pengguna' },
+  { param: 'category',  type: 'string',           endpoint: 'products, inventories, waste-resources', desc: 'Filter berdasarkan kategori' },
+  { param: 'available', type: 'boolean',          endpoint: 'products',                desc: 'Filter ketersediaan produk (true/false)' },
+  { param: 'type',      type: 'income | expense', endpoint: 'transactions',            desc: 'Filter jenis transaksi' },
+  { param: 'date_from', type: 'ISO date',         endpoint: 'transactions',            desc: 'Filter tanggal mulai' },
+  { param: 'date_to',   type: 'ISO date',         endpoint: 'transactions',            desc: 'Filter tanggal akhir' },
+  { param: 'low_stock', type: 'boolean',          endpoint: 'inventories',             desc: 'Tampilkan hanya stok menipis' },
+  { param: 'reusable',  type: 'boolean',          endpoint: 'waste-resources',         desc: 'Filter limbah yang bisa didaur ulang' },
+  { param: 'lat',       type: 'number',           endpoint: 'business-locations/nearby', desc: 'Latitude titik referensi pengguna' },
+  { param: 'lng',       type: 'number',           endpoint: 'business-locations/nearby', desc: 'Longitude titik referensi pengguna' },
+  { param: 'radius',    type: 'number (km)',      endpoint: 'business-locations/nearby', desc: 'Radius pencarian dalam kilometer' },
+  { param: 'ref_id',    type: 'string (UUID)',    endpoint: 'media',                   desc: 'ID referensi (produk / lokasi)' },
+  { param: 'ref_type',  type: 'string',           endpoint: 'media',                   desc: 'Tipe referensi (product / business_location)' },
 ]
 </script>
 
